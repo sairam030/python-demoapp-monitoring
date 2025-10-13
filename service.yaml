@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     app: monitorapp
-  name: pythonmoni
+  name: pythonmonitor
 spec:
   type: NodePort
   ports:
