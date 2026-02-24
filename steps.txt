@@ -1,0 +1,9 @@
+steps in baremettel
+make lint
+make lint-fix
+make test
+make test-report
+nohup make run > app.log 2>&1 &
+
+docker stop python_docker_deploy || true
+docker rm -f python_docker_deploy || true
