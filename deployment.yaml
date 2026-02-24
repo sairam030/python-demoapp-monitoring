@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
       - name: monitorapp
-        image: sreedocker123/pythonmonitoringapp:v1
+        image: sairam030/python_docker_deploy:v1
         ports:
         - containerPort: 5000
