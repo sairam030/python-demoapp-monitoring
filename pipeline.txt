@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+
+    environment {
+        GIT_REPO = 'https://github.com/sreepathysois/nodejs-monitoring-demoapp.git'
+        BRANCH = 'master'
+        DOCKER_IMAGE = 'sreedocker123/nodejs-monitoring-demoapp'
+        DOCKER_TAG = "${BUILD_NUMBER}"
+        DOCKER_CREDS = credentials('Sree_Docker_Cred')
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: "${BRANCH}", url: "${GIT_REPO}"
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'make lint'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'make test'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh """
+                docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} . -f build/Dockerfile
+                docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
+                """
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                sh """
+                echo ${DOCKER_CREDS_PSW} | docker login -u ${DOCKER_CREDS_USR} --password-stdin
+                docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+                docker push ${DOCKER_IMAGE}:latest
+                """
+            }
+        }
+
+        stage('Deploy Container') {
+            steps {
+                sh """
+                docker rm -f nodeapp || true
+                docker run -d -p 3010:3000 --name nodeapp ${DOCKER_IMAGE}:latest
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment Successful!"
+        }
+        failure {
+            echo "Pipeline Failed!"
+        }
+    }
+}
+
